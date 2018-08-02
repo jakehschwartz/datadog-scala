@@ -1,40 +1,41 @@
-package github.gphat.datadog
+package com.jakehschwartz.datadog
 
 import java.util.concurrent.TimeUnit
 
 import akka.actor.ActorSystem
-import akka.io.IO
-import akka.pattern.ask
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.model.Uri._
+import akka.http.scaladsl.model._
+import akka.stream.ActorMaterializer
 import akka.util.Timeout
-import grizzled.slf4j.Logging
-import spray.can.Http
-import spray.http.Uri._
-import spray.http._
-import spray.httpx.RequestBuilding._
+import com.typesafe.scalalogging.LazyLogging
 
 import scala.concurrent.Future
-import scala.util.{Failure, Success}
 
 class HttpAdapter(
-  httpTimeoutSeconds: Int = 10,
-  actorSystem: Option[ActorSystem] = None
-  ) extends Logging {
+                   httpTimeoutSeconds: Int = 10,
+                   actorSystem: Option[ActorSystem] = None
+                 ) extends LazyLogging {
 
   // If we didn't get an actor system passed in
-  implicit val finalAS = actorSystem.getOrElse(ActorSystem())
-  import finalAS.dispatcher // execution context for futures
+  implicit val system = actorSystem.getOrElse(ActorSystem())
+  implicit val materializer = ActorMaterializer()
+  // needed for the future flatMap/onComplete in the end
+  implicit val executionContext = system.dispatcher
+
   // Akka's Ask pattern requires an implicit timeout to know
   // how long to wait for a response.
   implicit val timeout = Timeout(httpTimeoutSeconds, TimeUnit.SECONDS)
 
   def doRequest(
-    scheme: String,
-    authority: String,
-    path: String,
-    method: String,
-    body: Option[String] = None,
-    params: Map[String,Option[String]] = Map.empty,
-    contentType: String = "json"): Future[Response] = {
+                 scheme: String,
+                 authority: String,
+                 path: String,
+                 method: String,
+                 body: Option[String] = None,
+                 params: Map[String,Option[String]] = Map.empty,
+                 contentType: String = "json"
+               ): Future[Response] = {
 
     // Turn a map of string,opt[string] into a map of string,string which is
     // what Query wants
@@ -43,26 +44,24 @@ class HttpAdapter(
       _._2.isDefined
     ).map(
       // Convert the remaining tuples to str,str
-      param => (param._1 -> param._2.get)
+      param => param._1 -> param._2.get
     )
     // Make a Uri
     val finalUrl = Uri(
       scheme = scheme,
       authority = Authority(host = Host(authority)),
       path = Path("/api/v1/" + path),
-      query = Query(filteredParams)
+      queryString = Option(Query(filteredParams).toString())
     )
 
     // Use the provided case classes from spray-client
     // to construct an HTTP request of the type needed.
     val httpRequest: HttpRequest = method match {
-      case "DELETE" => Delete(finalUrl, body)
-      case "GET" => Get(finalUrl, body)
+      case "DELETE" => HttpRequest(uri = finalUrl, method = HttpMethods.DELETE, entity = body.fold(HttpEntity.Empty)(HttpEntity(_)))
+      case "GET" => HttpRequest(uri = finalUrl, method = HttpMethods.GET, entity = body.fold(HttpEntity.Empty)(HttpEntity(_)))
       case "POST" => contentType match {
-        case "json" => Post(finalUrl, body.map({
-          b => HttpEntity(ContentTypes.`application/json`, b)
-        }).getOrElse(HttpEntity.Empty))
-        case _ => {
+        case "json" => HttpRequest(uri = finalUrl, method = HttpMethods.POST, entity = body.fold(HttpEntity.Empty)(HttpEntity(ContentTypes.`application/json`, _)))
+        case _ =>
           // This is going to be a form-encoded post. There's only one
           // API call that works this way (ugh) so I'm not going to worry
           // too much about making this work as cleanly as the rest of the
@@ -73,14 +72,13 @@ class HttpAdapter(
             path = Path("/api/v1/" + path)
           )
 
-          Post(formUrl, FormData(filteredParams))
-        }
+          HttpRequest(uri = formUrl, method = HttpMethods.POST, entity = FormData(filteredParams).toEntity)
       }
-      case "PUT" => Put(finalUrl, HttpEntity(ContentTypes.`application/json`, body.get))
+      case "PUT" => HttpRequest(uri = finalUrl, method = HttpMethods.PUT, entity = body.fold(HttpEntity.Empty)(HttpEntity(ContentTypes.`application/json`, _)))
       case _ => throw new IllegalArgumentException("Unknown HTTP method: " + method)
     }
 
-    debug("%s: %s".format(method, finalUrl))
+    logger.debug("%s: %s".format(method, finalUrl))
     // For spelunkers, the ? is a function of the Akka "ask pattern". Unlike !
     // it waits for a response in the form of a future. In this case we're
     // sending along a case class representing the type of HTTP request we want
@@ -90,18 +88,12 @@ class HttpAdapter(
   }
 
   def doHttp(request: HttpRequest): Future[Response] = {
-    (IO(Http) ? request).mapTo[HttpResponse].map({ res =>
-      Response(statusCode = res.status.intValue, res.entity.asString)
-    })
+    Http().singleRequest(request).map { res =>
+      Response(res.status.intValue, res.entity.asString)
+    }
   }
 
   def shutdown = {
-    (IO(Http) ? Http.CloseAll) onComplete {
-      // When this completes we will shutdown the actor system if it wasn't
-      // supplied by the user.
-      case Success(x) => if (actorSystem.isEmpty) { finalAS.shutdown() }
-      // If we fail to close not sure what we can except rethrow
-      case Failure(t) => throw t
-    }
+    system.terminate()
   }
 }

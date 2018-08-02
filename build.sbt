@@ -1,43 +1,48 @@
-organization := "com.github.gphat"
-
 name := "datadog-scala"
 
-scalaVersion := "2.11.8"
+organization := "com.jakehschwartz"
 
-crossScalaVersions := Seq("2.10.6", "2.11.8")
+scalaVersion := "2.12.6"
 
-resolvers += "spray repo" at "http://repo.spray.io"
+scalacOptions ++= Seq(
+  "-unchecked",
+  "-deprecation",
+  "-feature",
+  "-language:existentials",
+  "-language:implicitConversions"
+)
 
-resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
+libraryDependencies ++= Seq(
+  "com.typesafe.akka" %% "akka-stream" % "2.5.14",
+  "com.typesafe.akka" %% "akka-http"   % "10.1.3",
+  "org.json4s" %% "json4s-native" % "3.6.0",
+  "org.json4s" %% "json4s-jackson" % "3.6.0",
+  "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0",
+  "org.specs2" %% "specs2-core" % "4.3.2" % "test",
+  "org.slf4j" % "slf4j-simple" % "1.7.25" % "test"
+)
 
-resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"
+pomIncludeRepository := { _ => false }
 
-scalacOptions in Test ++= Seq("-Yrangepos")
+publishMavenStyle := true
 
-scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature")
+publishTo := {
+  val nexus = "https://oss.sonatype.org/"
+  if (isSnapshot.value)
+    Some("snapshots" at nexus + "content/repositories/snapshots")
+  else
+    Some("releases" at nexus + "service/local/staging/deploy/maven2")
+}
 
-libraryDependencies += "io.spray" %% "spray-can" % "1.3.2"
-
-libraryDependencies += "io.spray" %% "spray-http" % "1.3.2"
-
-libraryDependencies += "io.spray" %% "spray-httpx" % "1.3.2"
-
-libraryDependencies += "io.spray" %% "spray-util" % "1.3.2"
-
-libraryDependencies += "org.json4s" %% "json4s-native" % "3.5.0"
-
-libraryDependencies += "org.json4s" %% "json4s-jackson" % "3.5.0"
-
-libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.3.2"
-
-libraryDependencies += "org.clapper" %% "grizzled-slf4j" % "1.0.2"
-
-libraryDependencies += "org.specs2" %% "specs2-core" % "3.0.1" % "test"
-
-libraryDependencies += "org.slf4j" % "slf4j-simple" % "1.7.6" % "test"
-
-releasePublishArtifactsAction := PgpKeys.publishSigned.value
-
-releaseCrossBuild := true
-
-Publish.settings
+// License of your choice
+licenses := Seq("MIT" -> url("https://opensource.org/licenses/MIT"))
+homepage := Some(url("https://github.com/jakehschwartz/datadog-scala"))
+scmInfo := Some(
+  ScmInfo(
+    browseUrl = url("https://github.com/jakehschwartz/datadog-scala"),
+    connection = "https://github.com/jakehschwartz/datadog-scala.git"
+  )
+)
+developers := List(
+  Developer(id = "jakehschwartz", name = "Jake Schwartz", email = "jakehschwartz@gmail.com", url = url("https://www.jakehschwartz.com"))
+)

@@ -1,17 +1,15 @@
-package test
+package com.jakehschwartz.datadog
 
-import akka.actor.ActorSystem
-import akka.pattern.AskTimeoutException
-import github.gphat.datadog._
-import java.nio.charset.StandardCharsets
+import java.util.concurrent.TimeUnit
+
+import akka.http.scaladsl.model.HttpMethods
+import akka.util.Timeout
 import org.json4s._
 import org.json4s.native.JsonMethods._
 import org.specs2.mutable.Specification
+
+import scala.concurrent.Await
 import scala.concurrent.duration._
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{Await,Future,Promise}
-import scala.util.Try
-import spray.http._
 
 class CommentSpec extends Specification {
 
@@ -28,6 +26,8 @@ class CommentSpec extends Specification {
       appKey = "appKey",
       httpAdapter = adapter
     )
+    implicit val timeout = Timeout(10, TimeUnit.SECONDS)
+    implicit val materializer = adapter.materializer
 
     "handle add comment" in {
       val res = Await.result(client.addComment(

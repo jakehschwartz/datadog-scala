@@ -1,11 +1,8 @@
-package test
+package com.jakehschwartz.datadog
 
-import akka.actor.ActorSystem
-import akka.pattern.AskTimeoutException
-import github.gphat.datadog._
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{Future}
-import spray.http._
+import akka.http.scaladsl.model.HttpRequest
+
+import scala.concurrent.Future
 
 class OkHttpAdapter extends HttpAdapter {
 
@@ -18,3 +15,4 @@ class OkHttpAdapter extends HttpAdapter {
 
   def getRequest = lastRequest
 }
+
