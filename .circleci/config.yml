@@ -1,0 +1,81 @@
+version: 2
+jobs:
+
+  test:
+    docker:
+    - image: circleci/openjdk:8u171-jdk-stretch-node-browsers
+    steps:
+    - checkout
+    - run:
+        name: Save Build Number
+        command: echo $CIRCLE_BUILD_NUM > .publish_version
+    - save_cache:
+        key: datadog-scala-version-cache-{{ .Environment.CIRCLE_WORKFLOW_ID }}
+        paths:
+        - .publish_version
+    - restore_cache:
+        key: scala-sbt-cache-{{ checksum "project/build.properties" }}
+    - restore_cache:
+        key: datadog-scala-dependency-cache-{{ checksum "build.sbt" }}-{{ checksum "project/plugins.sbt" }}
+    - run:
+        name: Test
+        command: |
+          export CIRCLE_BUILD_NUM=$(cat .publish_version)
+          sbt test:compile test
+    - store_test_results:
+        path: target/test-reports/
+    - save_cache:
+        key: scala-sbt-cache-{{ checksum "project/build.properties" }}
+        paths:
+        - "~/.sbt"
+    - save_cache:
+        key: datadog-scala-dependency-cache-{{ checksum "build.sbt" }}-{{ checksum "project/plugins.sbt" }}
+        paths:
+        - "~/.ivy2/cache"
+        - "~/.m2"
+    - save_cache:
+        key: datadog-scala-target-cache-{{ .Environment.CIRCLE_WORKFLOW_ID }}
+        paths:
+        - "target/"
+        - "project/target/"
+
+  publish:
+    docker:
+    - image: circleci/openjdk:8u171-jdk-stretch-node-browsers
+    steps:
+    - checkout
+    - setup_remote_docker:
+        docker_layer_caching: true
+    - restore_cache:
+        key: scala-sbt-cache-{{ checksum "project/build.properties" }}
+    - restore_cache:
+        key: datadog-scala-dependency-cache-{{ checksum "build.sbt" }}-{{ checksum "project/plugins.sbt" }}
+    - restore_cache:
+        key: datadog-scala-target-cache-{{ .Environment.CIRCLE_WORKFLOW_ID }}
+    - run:
+        name: Decrypt Secrets
+        command: |
+          mkdir /home/circleci/.sbt/gpg
+          openssl aes-256-cbc -md sha256 -d -in secret-pubring.asc -k $ENCRYPTION_KEY > /home/circleci/.sbt/gpg/pubring.asc
+          openssl aes-256-cbc -md sha256 -d -in secret-secring.asc -k $ENCRYPTION_KEY > /home/circleci/.sbt/gpg/secring.asc
+    - run:
+        name: Publish Signed
+        command: |
+          sbt publishSigned
+    - run:
+        name: Sonatype Release
+        command: |
+          sbt sonatypeRelease
+
+workflows:
+  version: 2
+  main_workflow:
+    jobs:
+    - test
+    - publish:
+        requires:
+        - test
+        filters:
+          branches:
+            only:
+            - /master/

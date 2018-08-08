@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/gphat/datadog-scala.png?branch=master)](https://travis-ci.org/gphat/datadog-scala)
+[![CircleCI](https://circleci.com/gh/jakehschwartz/datadog-scala/tree/master.svg?style=svg)](https://circleci.com/gh/jakehschwartz/datadog-scala/tree/master)
 
 # Datadog-Scala
 
@@ -9,7 +9,7 @@ As of October 2014 this library covers all the methods in the [Datadog API Docum
 # Example
 
 ```scala
-import github.gphat.datadog.Client
+import com.jakehschwartz.datadog.Client
 import scala.concurrent.ExecutionContext.Implicits.global
 
 val client = new Client(apiKey = "XXX", appKey = "XXX")
