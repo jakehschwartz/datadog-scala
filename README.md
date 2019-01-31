@@ -20,9 +20,8 @@ client.getAllTimeboards.foreach({ response =>
 
 # Using It
 
-This library is available on Maven Central.
+This library is available on Maven Central and is only built for Scala 2.12.
 
 ```
-// Add the Dep, 2.10 and 2.11 artifacts are published!
-libraryDependencies += "com.github.gphat" %% "datadog-scala" % "1.1.3"
+libraryDependencies += "com.jakehschwartz.datadog" %% "datadog-scala" % "1.4.0"
 ```

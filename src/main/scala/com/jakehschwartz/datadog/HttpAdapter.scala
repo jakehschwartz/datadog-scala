@@ -13,7 +13,7 @@ import com.typesafe.scalalogging.LazyLogging
 import scala.concurrent.Future
 
 class HttpAdapter(
-                   httpTimeoutSeconds: Int = 10,
+                   httpTimeoutSeconds: Long = 10L,
                    actorSystem: Option[ActorSystem] = None
                  ) extends LazyLogging {
 
@@ -39,13 +39,9 @@ class HttpAdapter(
 
     // Turn a map of string,opt[string] into a map of string,string which is
     // what Query wants
-    val filteredParams = params.filter(
-      // Filter out keys that are None
-      _._2.isDefined
-    ).map(
-      // Convert the remaining tuples to str,str
-      param => param._1 -> param._2.get
-    )
+    val filteredParams = params.flatMap { case (k, vOpt) =>
+      vOpt.map(k -> _)
+    }
     // Make a Uri
     val finalUrl = Uri(
       scheme = scheme,

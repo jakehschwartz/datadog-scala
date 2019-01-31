@@ -21,7 +21,7 @@ jobs:
         name: Test
         command: |
           export CIRCLE_BUILD_NUM=$(cat .publish_version)
-          sbt test:compile test
+          sbt test:compile scapegoat coverage test coverageReport
     - store_test_results:
         path: target/test-reports/
     - save_cache:

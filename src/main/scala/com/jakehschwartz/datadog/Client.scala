@@ -30,7 +30,6 @@ class Client(
                   handle: Option[String] = None,
                   relatedEventId: Option[Long] = None
                 ): Future[Response] = {
-
     val json =
       ("message" -> message) ~
         ("handle" -> handle) ~
@@ -66,7 +65,6 @@ class Client(
   }
 
   def addMetrics(series: Seq[Metric]): Future[Response] = {
-
     val json = "series" -> series.map { s =>
       ("metric" -> s.name) ~
         ("points" -> s.points.map(tuple => Seq(JInt(tuple._1), JDouble(tuple._2)))) ~
@@ -87,7 +85,6 @@ class Client(
                        message: Option[String] = None,
                        tags: Option[Seq[String]] = None
                      ): Future[Response] = {
-
     val path = Seq("check_run").mkString("/")
     doRequest(path = path, method = "POST", params = Map(
       "check" -> Some(check),
@@ -100,14 +97,12 @@ class Client(
   }
 
   def addScreenboard(board: String): Future[Response] = {
-
     val path = Seq("screen").mkString("/")
     doRequest(path = path, method = "POST", body = Some(board))
   }
 
   // XXX source
   def addTags(hostId: String, tags: Seq[String]): Future[Response] = {
-
     val json = "tags" -> tags
 
     val path = Seq("tags", "hosts", hostId).mkString("/")
@@ -115,49 +110,41 @@ class Client(
   }
 
   def addAlert(alert: String): Future[Response] = {
-
     val path = Seq("alert").mkString("/")
     doRequest(path = path, method = "POST", body = Some(alert))
   }
 
   def addTimeboard(board: String): Future[Response] = {
-
     val path = Seq("dash").mkString("/")
     doRequest(path = path, method = "POST", body = Some(board))
   }
 
   def deleteAlert(alertId: Long): Future[Response] = {
-
     val path = Seq("alert", alertId).mkString("/")
     doRequest(path = path, method = "DELETE")
   }
 
   def deleteComment(commentId: Long): Future[Response] = {
-
     val path = Seq("comments", commentId).mkString("/")
     doRequest(path = path, method = "DELETE")
   }
 
   def deleteEvent(eventId: Long): Future[Response] = {
-
     val path = Seq("events", eventId).mkString("/")
     doRequest(path = path, method = "DELETE")
   }
 
   def deleteScreenboard(boardId: Long): Future[Response] = {
-
     val path = Seq("screen", boardId).mkString("/")
     doRequest(path = path, method = "DELETE")
   }
 
   def deleteTags(hostId: String): Future[Response] = {
-
     val path = Seq("tags", "hosts", hostId).mkString("/")
     doRequest(path = path, method = "DELETE")
   }
 
   def deleteTimeboard(boardId: Long): Future[Response] = {
-
     val path = Seq("dash", boardId).mkString("/")
     doRequest(path = path, method = "DELETE")
   }
@@ -239,7 +226,6 @@ class Client(
   }
 
   def inviteUsers(emails: Seq[String]): Future[Response] = {
-
     val json = "emails" -> emails
 
     val path = Seq("invite_users").mkString("/")
@@ -247,13 +233,11 @@ class Client(
   }
 
   def muteAllAlerts: Future[Response] = {
-
     val path = Seq("mute_alerts").mkString("/")
     doRequest(path = path, method = "POST")
   }
 
   def query(query: String, from: Int, to: Int): Future[Response] = {
-    val path = Seq("query")
     doRequest(path = "query", method = "GET", params = Map(
       "query" -> Some(query),
       "from" -> Some(from.toString),
@@ -267,13 +251,11 @@ class Client(
   }
 
   def unmuteAllAlerts: Future[Response] = {
-
     val path = Seq("unmute_alerts").mkString("/")
     doRequest(path = path, method = "POST")
   }
 
   def updateAlert(alertId: Long, alert: String): Future[Response] = {
-
     val path = Seq("alert", alertId).mkString("/")
     doRequest(path = path, method = "PUT", body = Some(alert))
   }
@@ -281,10 +263,8 @@ class Client(
   def updateComment(
                      commentId: Long,
                      message: Option[String],
-                     handle: Option[String] = None,
-                     relatedEventId: Option[Long] = None
+                     handle: Option[String] = None
                    ): Future[Response] = {
-
     val json =
       ("message" -> message) ~
         ("handle" -> handle)
@@ -294,13 +274,11 @@ class Client(
   }
 
   def updateScreenboard(boardId: Long, board: String): Future[Response] = {
-
     val path = Seq("screen", boardId).mkString("/")
     doRequest(path = path, method = "PUT", body = Some(board))
   }
 
   def updateTimeboard(boardId: Long, board: String): Future[Response] = {
-
     val path = Seq("dash", boardId).mkString("/")
     doRequest(path = path, method = "PUT", body = Some(board))
   }
@@ -312,7 +290,6 @@ class Client(
                          params: Map[String,Option[String]] = Map.empty,
                          contentType: String = "json"
                        ) = {
-
     httpAdapter.doRequest(
       method = method, scheme = scheme, authority = authority, path = path,
       body = body, params = params ++ Map("api_key" -> Some(apiKey), "application_key" -> Some(appKey)),
@@ -323,7 +300,7 @@ class Client(
   /**
     * Disconnects any remaining connections. Both idle and active.
     */
-  def shutdown() {
-    httpAdapter.shutdown
+  def shutdown(): Unit = {
+    val _ = httpAdapter.shutdown
   }
 }
