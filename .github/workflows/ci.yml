@@ -1,18 +1,19 @@
 name: CI
 
-on:
-  push:
-    branches:
-    - master
+on: push
     
 jobs:
   build:
-
     runs-on: ubuntu-latest
-    
     steps:
     - uses: actions/checkout@v1
     - name: setup-java
       uses: olafurpg/setup-scala@v5
     - name: Test
       run: sbt test:compile test
+  publish:
+    needs: build
+    steps:
+      - name: Publish
+        if: github.event_name == 'push' && github.ref == 'master'
+        run: sbt assembly
