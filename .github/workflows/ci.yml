@@ -18,6 +18,5 @@ jobs:
       - name: Publish
         if: github.event_name == 'push' && github.ref == 'master'
         run: sbt assembly
-      - name: Publish backup
-        if: failure()
+      - name: Print ref
         run: echo github.ref
