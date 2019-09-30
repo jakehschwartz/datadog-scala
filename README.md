@@ -1,5 +1,3 @@
-[![CircleCI](https://circleci.com/gh/jakehschwartz/datadog-scala/tree/master.svg?style=svg)](https://circleci.com/gh/jakehschwartz/datadog-scala/tree/master)
-
 # Datadog-Scala
 
 A Scala library for interacting with the Datadog API.
