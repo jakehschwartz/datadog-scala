@@ -19,4 +19,4 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'master'
         run: sbt assembly
       - name: Print ref
-        run: echo github.ref
+        run: echo ${github.ref}
