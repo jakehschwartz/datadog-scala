@@ -13,6 +13,7 @@ jobs:
       run: sbt test:compile test
   publish:
     needs: build
+    runs-on: ubuntu-latest
     steps:
       - name: Publish
         if: github.event_name == 'push' && github.ref == 'master'
