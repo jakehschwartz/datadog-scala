@@ -1,0 +1,18 @@
+name: CI
+
+on:
+  push:
+    branches:
+    - master
+    
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: setup-java
+      uses: olafurpg/setup-scala@v5
+    - name: Test
+      run: sbt test:compile test
