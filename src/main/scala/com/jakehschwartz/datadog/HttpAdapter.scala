@@ -1,15 +1,13 @@
 package com.jakehschwartz.datadog
 
-import java.util.concurrent.TimeUnit
-
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.Uri._
 import akka.http.scaladsl.model._
-import akka.stream.ActorMaterializer
 import akka.util.Timeout
 import com.typesafe.scalalogging.LazyLogging
 
+import java.util.concurrent.TimeUnit
 import scala.concurrent.Future
 
 class HttpAdapter(
@@ -19,7 +17,6 @@ class HttpAdapter(
 
   // If we didn't get an actor system passed in
   implicit val system = actorSystem.getOrElse(ActorSystem())
-  implicit val materializer = ActorMaterializer()
   // needed for the future flatMap/onComplete in the end
   implicit val executionContext = system.dispatcher
 
@@ -33,7 +30,7 @@ class HttpAdapter(
                  path: String,
                  method: String,
                  body: Option[String] = None,
-                 params: Map[String,Option[String]] = Map.empty,
+                 params: Map[String, Option[String]] = Map.empty,
                  contentType: String = "json"
                ): Future[Response] = {
 

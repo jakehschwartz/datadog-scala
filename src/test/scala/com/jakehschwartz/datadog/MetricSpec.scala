@@ -1,9 +1,6 @@
 package com.jakehschwartz.datadog
 
-import java.util.concurrent.TimeUnit
-
-import akka.http.scaladsl.model.HttpMethods
-import akka.util.Timeout
+import akka.http.scaladsl.model.{HttpEntity, HttpMethods}
 import org.json4s._
 import org.json4s.native.JsonMethods._
 import org.specs2.mutable.Specification
@@ -26,8 +23,6 @@ class MetricSpec extends Specification {
       appKey = "appKey",
       httpAdapter = adapter
     )
-    implicit val timeout = Timeout(10, TimeUnit.SECONDS)
-    implicit val materializer = adapter.materializer
 
     "handle add metrics" in {
       val res = Await.result(client.addMetrics(
@@ -50,8 +45,8 @@ class MetricSpec extends Specification {
       ), Duration(5, "second"))
 
       res.statusCode must beEqualTo(200)
-      adapter.getRequest must beSome.which(_.uri.toString == "https://app.datadoghq.com/api/v1/series?api_key=apiKey&application_key=appKey")
-      val body = parse(adapter.getRequest.get.entity.asString)
+      adapter.getRequest.get.uri.toString must be_==("https://app.datadoghq.com/api/v1/series?api_key=apiKey&application_key=appKey")
+      val body = parse(adapter.getRequest.get.entity.asInstanceOf[HttpEntity.Strict].getData().utf8String)
       val series = body.asInstanceOf[JObject].obj.head._2.asInstanceOf[JArray].arr.map(_.asInstanceOf[JObject])
       val names = series.flatMap(_.obj.collect {
         case (key, value) if key == "metric" => value.asInstanceOf[JString].s
@@ -69,7 +64,7 @@ class MetricSpec extends Specification {
       val entry2: Seq[JValue] = Seq(JArray(List(JInt(1412183580), JDouble(12.0))), JArray(List(JInt(1412183581), JDouble(123.0))))
       points must contain(allOf(entry1, entry2))
 
-      adapter.getRequest must beSome.which(_.method == HttpMethods.POST)
+      adapter.getRequest.get.method must be_==(HttpMethods.POST)
     }
 
     "handle query timeseries" in {
@@ -90,7 +85,7 @@ class MetricSpec extends Specification {
         "to" -> "1470539518"
       )
 
-      adapter.getRequest must beSome.which(_.method == HttpMethods.GET)
+      adapter.getRequest.get.method must be_==(HttpMethods.GET)
     }
   }
 }

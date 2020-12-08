@@ -10,7 +10,9 @@ class OkHttpAdapter extends HttpAdapter {
 
   override def doHttp(request: HttpRequest) = {
     lastRequest = Some(request)
-    Future { Response(200, "Ok") }
+    Future {
+      Response(200, "Ok")
+    }
   }
 
   def getRequest = lastRequest

@@ -90,7 +90,9 @@ class Client(
       "check" -> Some(check),
       "host_name" -> Some(hostName),
       "status" -> Some(status.toString),
-      "timestamp" -> timestamp.map { _.toString },
+      "timestamp" -> timestamp.map {
+        _.toString
+      },
       "message" -> message,
       "tags" -> tags.map({ tees => tees.mkString(",") })
     ))
@@ -287,7 +289,7 @@ class Client(
                          path: String,
                          method: String,
                          body: Option[String] = None,
-                         params: Map[String,Option[String]] = Map.empty,
+                         params: Map[String, Option[String]] = Map.empty,
                          contentType: String = "json"
                        ) = {
     httpAdapter.doRequest(

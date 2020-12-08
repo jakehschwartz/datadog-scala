@@ -44,7 +44,7 @@ class ServiceCheckSpec extends Specification {
         "status" -> "0"
       )
 
-      adapter.getRequest must beSome.which(_.method == HttpMethods.POST)
+      adapter.getRequest.get.method must be_==(HttpMethods.POST)
     }
   }
 }

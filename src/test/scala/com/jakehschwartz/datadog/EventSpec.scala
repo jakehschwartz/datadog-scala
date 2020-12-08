@@ -1,9 +1,6 @@
 package com.jakehschwartz.datadog
 
-import java.util.concurrent.TimeUnit
-
-import akka.http.scaladsl.model.HttpMethods
-import akka.util.Timeout
+import akka.http.scaladsl.model.{HttpEntity, HttpMethods}
 import org.json4s._
 import org.json4s.native.JsonMethods._
 import org.specs2.mutable.Specification
@@ -27,27 +24,24 @@ class EventSpec extends Specification {
       httpAdapter = adapter
     )
 
-    implicit val timeout = Timeout(10, TimeUnit.SECONDS)
-    implicit val materializer = adapter.materializer
-
     "handle get event" in {
       val res = Await.result(client.getEvent(12345), Duration(5, "second"))
 
       res.statusCode must beEqualTo(200)
-      adapter.getRequest must beSome.which(_.uri.toString == "https://app.datadoghq.com/api/v1/events/12345?api_key=apiKey&application_key=appKey")
-      adapter.getRequest must beSome.which(_.method == HttpMethods.GET)
+      adapter.getRequest.get.uri.toString must be_==("https://app.datadoghq.com/api/v1/events/12345?api_key=apiKey&application_key=appKey")
+      adapter.getRequest.get.method must be_==(HttpMethods.GET)
     }
 
     "handle add event" in {
       val res = Await.result(client.addEvent(title = "poop", text = "fart"), Duration(5, "second"))
 
       res.statusCode must beEqualTo(200)
-      adapter.getRequest must beSome.which(_.uri.toString == "https://app.datadoghq.com/api/v1/events?api_key=apiKey&application_key=appKey")
-      val body = parse(adapter.getRequest.get.entity.asString)
+      adapter.getRequest.get.uri.toString must be_==("https://app.datadoghq.com/api/v1/events?api_key=apiKey&application_key=appKey")
+      val body = parse(adapter.getRequest.get.entity.asInstanceOf[HttpEntity.Strict].getData().utf8String)
       (body \ "title").extract[String] must beEqualTo("poop")
       (body \ "text").extract[String] must beEqualTo("fart")
 
-      adapter.getRequest must beSome.which(_.method == HttpMethods.POST)
+      adapter.getRequest.get.method must be_==(HttpMethods.POST)
     }
 
     "handle get events" in {

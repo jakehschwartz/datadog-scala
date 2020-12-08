@@ -35,7 +35,7 @@ class GraphSpec extends Specification {
       uri must contain("event_query=e")
       uri must contain("start=1234")
       uri must contain("end=1235")
-      adapter.getRequest must beSome.which(_.method == HttpMethods.GET)
+      adapter.getRequest.get.method must be_==(HttpMethods.GET)
     }
   }
 }

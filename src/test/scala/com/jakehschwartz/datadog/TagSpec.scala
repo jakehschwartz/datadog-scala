@@ -1,9 +1,6 @@
 package com.jakehschwartz.datadog
 
-import java.util.concurrent.TimeUnit
-
-import akka.http.scaladsl.model.HttpMethods
-import akka.util.Timeout
+import akka.http.scaladsl.model.{HttpEntity, HttpMethods}
 import org.json4s._
 import org.json4s.native.JsonMethods._
 import org.specs2.mutable.Specification
@@ -27,44 +24,41 @@ class TagSpec extends Specification {
       httpAdapter = adapter
     )
 
-    implicit val timeout = Timeout(10, TimeUnit.SECONDS)
-    implicit val materializer = adapter.materializer
-
     "handle get all tags" in {
       val res = Await.result(client.getAllTags, Duration(5, "second"))
 
       res.statusCode must beEqualTo(200)
-      adapter.getRequest must beSome.which(_.uri.toString == "https://app.datadoghq.com/api/v1/tags/hosts?api_key=apiKey&application_key=appKey")
-      adapter.getRequest must beSome.which(_.method == HttpMethods.GET)
+      adapter.getRequest.get.uri.toString must be_==("https://app.datadoghq.com/api/v1/tags/hosts?api_key=apiKey&application_key=appKey")
+      adapter.getRequest.get.method must be_==(HttpMethods.GET)
     }
 
     "handle add tags for host" in {
       val res = Await.result(client.addTags("12345", Seq("foo:bar", "butt")), Duration(5, "second"))
 
       res.statusCode must beEqualTo(200)
-      adapter.getRequest must beSome.which(_.uri.toString == "https://app.datadoghq.com/api/v1/tags/hosts/12345?api_key=apiKey&application_key=appKey")
-      adapter.getRequest must beSome.which(_.method == HttpMethods.POST)
+      adapter.getRequest.get.uri.toString must be_==("https://app.datadoghq.com/api/v1/tags/hosts/12345?api_key=apiKey&application_key=appKey")
+      adapter.getRequest.get.method must be_==(HttpMethods.POST)
 
-      val body = parse(adapter.getRequest.get.entity.asString)
-      (body \ "tags")(0).extract[String] must beEqualTo("foo:bar")
-      (body \ "tags")(1).extract[String] must beEqualTo("butt")
+      val body = parse(adapter.getRequest.get.entity.asInstanceOf[HttpEntity.Strict].getData().utf8String)
+      (body \ "tags") (0).extract[String] must beEqualTo("foo:bar")
+      (body \ "tags") (1).extract[String] must beEqualTo("butt")
     }
 
     "handle get tags for host" in {
       val res = Await.result(client.getTags("12345"), Duration(5, "second"))
 
       res.statusCode must beEqualTo(200)
-      adapter.getRequest must beSome.which(_.uri.toString == "https://app.datadoghq.com/api/v1/tags/hosts/12345?api_key=apiKey&application_key=appKey")
-      adapter.getRequest must beSome.which(_.method == HttpMethods.GET)
+      adapter.getRequest.get.uri.toString must be_==("https://app.datadoghq.com/api/v1/tags/hosts/12345?api_key=apiKey&application_key=appKey")
+      adapter.getRequest.get.method must be_==(HttpMethods.GET)
     }
 
     "handle delete tags" in {
       val res = Await.result(client.deleteTags("12345"), Duration(5, "second"))
 
       res.statusCode must beEqualTo(200)
-      adapter.getRequest must beSome.which(_.uri.toString == "https://app.datadoghq.com/api/v1/tags/hosts/12345?api_key=apiKey&application_key=appKey")
+      adapter.getRequest.get.uri.toString must be_==("https://app.datadoghq.com/api/v1/tags/hosts/12345?api_key=apiKey&application_key=appKey")
 
-      adapter.getRequest must beSome.which(_.method == HttpMethods.DELETE)
+      adapter.getRequest.get.method must be_==(HttpMethods.DELETE)
     }
   }
 }
