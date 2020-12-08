@@ -44,8 +44,6 @@ jobs:
     - image: circleci/openjdk:8u171-jdk-stretch-node-browsers
     steps:
     - checkout
-    - setup_remote_docker:
-        docker_layer_caching: true
     - restore_cache:
         key: scala-sbt-cache-{{ checksum "project/build.properties" }}
     - restore_cache:
@@ -68,7 +66,7 @@ jobs:
           sbt sonatypeReleaseAll
 
 workflows:
-  version: 2
+  version: 2.1
   main_workflow:
     jobs:
     - test
