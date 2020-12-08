@@ -56,8 +56,6 @@ libraryDependencies ++= Seq(
 
 coverageEnabled.in(Test, test) := true
 
-scapegoatVersion in ThisBuild := "1.3.11"
-
 pomIncludeRepository := { _ => false }
 
 publishMavenStyle := true
