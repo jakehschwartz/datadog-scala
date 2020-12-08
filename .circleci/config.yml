@@ -61,11 +61,11 @@ jobs:
     - run:
         name: Publish Signed
         command: |
-          sbt publishSigned
+          sbt +publishSigned
     - run:
         name: Sonatype Release
         command: |
-          sbt sonatypeRelease
+          sbt sonatypeReleaseAll
 
 workflows:
   version: 2

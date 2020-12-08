@@ -3,7 +3,9 @@ name := "datadog-scala"
 
 organization := "com.jakehschwartz"
 
-scalaVersion := "2.12.7"
+scalaVersion := "2.13.4"
+
+crossScalaVersions := Seq("2.13.4", "2.12.11")
 
 // Recommended here https://tpolecat.github.io/2017/04/25/scalac-flags.html
 scalacOptions ++= Seq(
@@ -19,13 +21,11 @@ scalacOptions ++= Seq(
   "-Xfatal-warnings",                  // Fail the compilation if there are any warnings.
   "-Xfuture",                          // Turn on future language features.
   "-Xlint:adapted-args",               // Warn if an argument list is modified to match the receiver.
-  "-Xlint:by-name-right-associative",  // By-name parameter of right associative operator.
   "-Xlint:constant",                   // Evaluation of a constant arithmetic expression results in an error.
   "-Xlint:delayedinit-select",         // Selecting member of DelayedInit.
   "-Xlint:doc-detached",               // A Scaladoc comment appears to be detached from its element.
   "-Xlint:inaccessible",               // Warn about inaccessible types in method signatures.
   "-Xlint:infer-any",                  // Warn when a type argument is inferred to be `Any`.
-  "-Xlint:nullary-override",           // Warn when non-nullary `def f()' overrides nullary `def f'.
   "-Xlint:nullary-unit",               // Warn when nullary methods return Unit.
   "-Xlint:option-implicit",            // Option.apply used implicit view.
   "-Xlint:package-object-classes",     // Class or object defined in package object.
@@ -33,8 +33,6 @@ scalacOptions ++= Seq(
   "-Xlint:private-shadow",             // A private field (or class parameter) shadows a superclass field.
   "-Xlint:stars-align",                // Pattern sequence wildcard must align with sequence component.
   "-Xlint:type-parameter-shadow",      // A local type parameter shadows a type already in scope.
-  "-Xlint:unsound-match",              // Pattern match may not be typesafe.
-  "-Yno-adapted-args",                 // Do not adapt an argument list (either by inserting () or creating a tuple) to match the receiver.
   "-Ypartial-unification",             // Enable partial unification in type constructor inference
   "-Ywarn-dead-code",                  // Warn when dead code is identified.
   "-Ywarn-extra-implicit",             // Warn when more than one implicit parameter section is defined.
@@ -53,18 +51,18 @@ scalacOptions ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "com.typesafe.akka" %% "akka-stream" % "2.5.20",
-  "com.typesafe.akka" %% "akka-http"   % "10.1.7",
-  "org.json4s" %% "json4s-native" % "3.6.4",
-  "org.json4s" %% "json4s-jackson" % "3.6.4",
+  "com.typesafe.akka" %% "akka-stream" % "2.6.10",
+  "com.typesafe.akka" %% "akka-http" % "10.2.1",
+  "org.json4s" %% "json4s-native" % "3.6.10",
+  "org.json4s" %% "json4s-jackson" % "3.6.10",
   "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
-  "org.specs2" %% "specs2-core" % "4.4.1" % "test",
-  "org.slf4j" % "slf4j-simple" % "1.7.25" % "test"
+  "org.specs2" %% "specs2-core" % "4.10.5" % "test",
+  "org.slf4j" % "slf4j-simple" % "1.7.30" % "test"
 )
 
 coverageEnabled.in(Test, test) := true
 
-scapegoatVersion in ThisBuild := "1.3.8"
+scapegoatVersion in ThisBuild := "1.3.11"
 
 pomIncludeRepository := { _ => false }
 
